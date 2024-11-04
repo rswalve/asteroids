@@ -3,11 +3,14 @@ from constants import PLAYER_RADIUS
 import pygame
 from constants import PLAYER_TURN_SPEED
 from constants import PLAYER_SPEED
+from shot import Shot
+from constants import PLAYER_SHOOT_SPEED
 
 class Player(CircleShape):
-    def __init__(self, x, y):
+    def __init__(self, x, y, shots_group):
         super().__init__(x, y, PLAYER_RADIUS)
         self.rotation = 0
+        self.shots_group = shots_group
 
     def triangle(self):
         forward = pygame.Vector2(0, 1).rotate(self.rotation)
@@ -34,19 +37,47 @@ class Player(CircleShape):
             self.move(-dt)  # Negative dt for moving ship
         if keys[pygame.K_s]:
             self.move(dt)   # Positive dt for moving ship
+        if keys[pygame.K_SPACE]:
+            self.shoot()
 
     def move(self, dt):
         forward = pygame.Vector2(0, 1).rotate(self.rotation)
         self.position += forward * PLAYER_SPEED * dt
 
-def main():
-    #Screen dimensions
-    SCREEN_WIDTH = 800
-    SCREEN_HEIGHT = 600
+    def shoot(self):
+        # Create the shot at the player's current position
+        new_shot = Shot(self.position.x, self.position.y)
+        
+        # Set the shot's velocity
+        direction_vector = pygame.Vector2(0, -1)  # Adjust to initial default direction
+        shot_velocity = direction_vector.rotate(self.rotation) * PLAYER_SHOOT_SPEED
+        new_shot.velocity = shot_velocity
+        
+        # Add the shot to the shots group
+        self.shots_group.add(new_shot)
+        
 
-    #Calculate the initiasl position
-    x = SCREEN_WIDTH / 2
-    y = SCREEN_HEIGHT / 2
+    def main():
+        # Screen dimensions
+        SCREEN_WIDTH = 800
+        SCREEN_HEIGHT = 600
 
-    #Player instance
-    player = Player(x, y)
+        # Create the shots group
+        shots_group = pygame.sprite.Group()
+
+        # Calculate the initial position
+        x = SCREEN_WIDTH / 2
+        y = SCREEN_HEIGHT / 2
+
+        # Create a player instance
+        player = Player(x, y, shots_group)
+
+        # Rest of your game loop and logic
+        # ...
+
+        # Example of updating and drawing shots
+        shots_group.update()
+        for shot in shots_group:
+            shot.draw(screen)  # Assuming Shot class has a draw method
+
+        # Don't forget to display text and finalize running conditions
